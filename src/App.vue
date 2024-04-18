@@ -2,12 +2,22 @@
 import {ref} from 'vue';
 import axios from 'axios';
 
+interface MultiResList {
+  id: number;
+  objectName: string;
+  file: File;
+}
+
+
 const singleFile = ref<File | null>(null);
 const multipleFiles = ref<File[]>([])
-const multiResName = ref<string[]>([]);
+const multiResData = ref<MultiResList[]>([]);
 const viewImg = ref<string | null>(null);
 const viewMultiImg = ref<string[]>([]);
 const singleName = ref<string | null>(null);
+const singleLoader = ref(false);
+const multiLoader = ref(false);
+const isDisabled = ref(false);
 const singleUpload = async () => {
   if (singleFile.value) {
     try {
@@ -36,13 +46,20 @@ const singleUpload = async () => {
 
 const multipleUpload = async () => {
   if (multipleFiles.value.length > 0) {
-    const response = await uploadMultiple(multipleFiles.value);
-    multiResName.value = [];
-    for (let i = 0; i < response.data.length; i++) {
-      const name = response.data[i].objectName as string;
-      multiResName.value.push(name);
+    multiLoader.value = true;
+    for (let i = 0; i < multipleFiles.value.length; i++) {
+      const response = await uploadSingle(multipleFiles.value[i]);
+      // console.log("Multiple res", response.data.objectName);
+      multiResData.value.push({
+        id: new Date().getTime() + i,
+        objectName: response.data.objectName,
+        file: multipleFiles.value[i]
+      });
+      // console.log("Multiple file res", multipleFiles.value)
     }
+    multiLoader.value = false;
   }
+  console.log("multi", multiResData.value)
 };
 
 async function uploadSingle(file: File) {
@@ -51,24 +68,12 @@ async function uploadSingle(file: File) {
   data.append('module', 'test');
   data.append('fileName', 'test');
   data.append('file', file);
-
-  return await axios.post('http://192.168.100.241:9999/api/file/upload/public', data);
-}
-
-async function uploadMultiple(file: any) {
-  const data = new FormData();
-  const fileNames: string[] = [];
-  data.append('tenantId', 'test');
-  data.append('module', 'test');
-  for (let i = 0; i < file.length; i++) {
-    console.log(file[i].name);
-    fileNames.push(file[i].name);
-    data.append('files', file[i]);
+  if (!multiLoader.value) {
+    singleLoader.value = true;
   }
-  console.log(fileNames)
-  data.append('fileNames', fileNames);
-
-  return await axios.post('http://192.168.100.241:9999/api/file/multiple-upload/public', data);
+  const res = await axios.post('http://192.168.100.241:9999/api/file/upload/public', data);
+  singleLoader.value = false;
+  return res;
 }
 
 function singleChange(e: any) {
@@ -93,9 +98,8 @@ function singleChange(e: any) {
 }
 
 function multiChange(e: any) {
+  console.log("change ishladi");
   if (e.target.files) {
-    // multipleFiles.value = e.target.files;
-    console.log(multipleFiles.value)
     console.log("MultipleFiles: ", e.target.files);
     for (let i = 0; i < e.target.files.length; i++) {
       multipleFiles.value.push(e.target.files[i]);
@@ -120,9 +124,8 @@ function multiChange(e: any) {
 const remove = async (index: number) => {
   viewMultiImg.value.splice(index, 1);
   multipleFiles.value.splice(index, 1);
-  multiResName.value.splice(index, 1);
-  if (multiResName.value.length > 0 && multiResName.value.length > index) {
-    await axios.delete(`http://192.168.100.241:9999/api/file/delete/${multiResName.value[index]}`).then((res) => console.log(res));
+  if (multiResData.value.length > 0 && multiResData.value.length > index) {
+    await axios.delete(`http://192.168.100.241:9999/api/file/delete/${multiResData.value[index].objectName}`).then((res) => console.log(res));
   }
 }
 </script>
@@ -135,7 +138,7 @@ const remove = async (index: number) => {
       <input class="hidden" type="file" @change="singleChange">
     </label>
     <p class="w-[200px]">{{ singleName }}</p>
-    <button @click="singleUpload" class="btn btn-blue w-[200px]">Upload</button>
+    <button @click="singleUpload" class="btn btn-blue w-[200px]">{{ singleLoader ? 'Updating...' : "Update" }}</button>
   </div>
   <div class="grid gap-2 w-[100vw] h-[100%] p-2">
     <p>Multiple Upload</p>
@@ -153,7 +156,9 @@ const remove = async (index: number) => {
         <input class="hidden" type="file" multiple @change="multiChange">
       </label>
     </div>
-    <button @click="multipleUpload" class="btn btn-blue w-[200px]">Upload</button>
+    <button :disabled="isDisabled" @click="multipleUpload" class="btn btn-blue w-[200px]">
+      {{ multiLoader ? 'Saving...' : "Save" }}
+    </button>
   </div>
 </template>
 
