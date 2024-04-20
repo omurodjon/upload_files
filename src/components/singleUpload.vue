@@ -17,29 +17,30 @@ const singleStatus = ref(0);
 const viewImg = ref<string | null>(null);
 const limit = ref<number>(25600000);
 
-function singleChange(e: any) {
-	if (e.target.files && e.target.files.length > 0) {
-		if (e.target.files[0].type.includes('jpeg') || e.target.files[0].type.includes('png')) {
-			viewImg.value = URL.createObjectURL(e.target.files[0]);
-		} else if (e.target.files[0].type.includes('pdf')) {
+function singleChange(e: Event) {
+	const file = (e.target as HTMLInputElement).files;
+	if (file && file.length > 0) {
+		if (file[0].type.includes('jpeg') || file[0].type.includes('png')) {
+			viewImg.value = URL.createObjectURL(file[0]);
+		} else if (file[0].type.includes('pdf')) {
 			viewImg.value =
 				'https://play-lh.googleusercontent.com/9XKD5S7rwQ6FiPXSyp9SzLXfIue88ntf9sJ9K250IuHTL7pmn2-ZB0sngAX4A2Bw4w';
-		} else if (e.target.files[0].type.includes('zip')) {
+		} else if (file[0].type.includes('zip')) {
 			viewImg.value =
 				'https://d1nhio0ox7pgb.cloudfront.net/_img/g_collection_png/standard/512x512/folder_zip.png';
-		} else if (e.target.files[0].type.includes('sql')) {
+		} else if (file[0].type.includes('sql')) {
 			viewImg.value = 'https://www.shareicon.net/data/2015/09/07/97430_document_512x512.png';
-		} else if (e.target.files[0].type.includes('html')) {
+		} else if (file[0].type.includes('html')) {
 			viewImg.value =
 				'https://cdn4.iconfinder.com/data/icons/smashicons-file-types-flat/56/22_-_HTML_File_Flat-512.png';
 		} else {
 			viewImg.value = 'https://www.iconpacks.net/icons/2/free-file-icon-1453-thumb.png';
 		}
 		singleFile.value = {
-			file: e.target.files[0],
-			size: e.target.files[0].size,
+			file: file[0],
+			size: file[0].size,
 			img: viewImg.value,
-			name: e.target.files[0].name,
+			name: file[0].name,
 			status: 0,
 		};
 	}
@@ -64,27 +65,6 @@ const singleUpload = async () => {
 				if (singleFile.value.status !== 1) {
 					const response = await uploadSingle(singleFile.value.file);
 					singleFile.value.status = 1;
-
-					const url = response.data.objectName as string;
-					if (
-						singleFile.value.file.type.includes('jpeg') ||
-						singleFile.value.file.type.includes('png')
-					) {
-						viewImg.value = `http://192.168.100.241:9999/api/file/view-image/${url}`;
-					} else if (singleFile.value.file.type.includes('pdf')) {
-						viewImg.value =
-							'https://play-lh.googleusercontent.com/9XKD5S7rwQ6FiPXSyp9SzLXfIue88ntf9sJ9K250IuHTL7pmn2-ZB0sngAX4A2Bw4w';
-					} else if (singleFile.value.file.type.includes('zip')) {
-						viewImg.value =
-							'https://d1nhio0ox7pgb.cloudfront.net/_img/g_collection_png/standard/512x512/folder_zip.png';
-					} else if (singleFile.value.file.type.includes('sql')) {
-						viewImg.value = 'https://www.shareicon.net/data/2015/09/07/97430_document_512x512.png';
-					} else if (singleFile.value.file.type.includes('html')) {
-						viewImg.value =
-							'https://cdn4.iconfinder.com/data/icons/smashicons-file-types-flat/56/22_-_HTML_File_Flat-512.png';
-					} else {
-						viewImg.value = 'https://www.iconpacks.net/icons/2/free-file-icon-1453-thumb.png';
-					}
 				}
 			} else {
 				singleFile.value.status = 3;
@@ -99,7 +79,7 @@ const singleUpload = async () => {
 
 <template>
 	<div class="grid gap-2 w-[200px] h-[100%] p-2">
-		<p>Single Upload</p>
+		<b>Single Upload</b>
 		<label
 			class="buttons border relative"
 			:style="{
@@ -115,23 +95,24 @@ const singleUpload = async () => {
 				src="https://www.shareicon.net/data/2016/08/20/817720_check_395x512.png"
 			/>
 			<img
-				v-if="singleFile?.status == 2"
+				v-else-if="singleFile?.status == 2"
 				class="absolute top-1 left-1 w-[30px]"
 				src="https://upload.wikimedia.org/wikipedia/commons/4/43/Minimalist_info_Icon.png"
 			/>
 			<img
-				v-if="singleFile?.status == 3"
+				v-else-if="singleFile?.status == 3"
 				class="absolute top-1 left-1 w-[30px]"
 				src="https://www.iconpacks.net/icons/2/free-storage-icon-1452-thumb.png"
 			/>
+			<b v-if="!singleFile?.img" class="p-6">Max file size 25MB</b>
 			<input class="hidden" type="file" @change="singleChange" />
 		</label>
-		<p class="w-[200px]">{{ singleName }}</p>
+		<b class="w-[200px]">{{ singleFile?.name }}</b>
 		<button
 			@click="singleUpload"
 			class="btn btn-blue w-[200px]"
-			:class="[singleStatus == 200 ? 'cursor-no-drop' : '']"
-			:disabled="singleStatus == 200"
+			:class="[singleFile?.status == 1 ? 'cursor-no-drop' : '']"
+			:disabled="singleFile?.status == 1"
 		>
 			{{ singleLoader ? 'Updating...' : 'Update' }}
 		</button>

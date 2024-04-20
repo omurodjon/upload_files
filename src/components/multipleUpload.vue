@@ -12,7 +12,7 @@ interface MultiResList {
 	objectName: string;
 }
 
-const multiResData = ref<MultiResList[]>([]);
+const multipleFiles = ref<MultiResList[]>([]);
 const imgUrl = ref<string>('');
 const multiLoader = ref(false);
 const isDisabled = ref(false);
@@ -42,7 +42,8 @@ function multiChange(e: Event) {
 		} else {
 			imgUrl.value = 'https://www.iconpacks.net/icons/2/free-file-icon-1453-thumb.png';
 		}
-		multiResData.value.push({
+
+		multipleFiles.value.push({
 			id: new Date().getTime() + i.toString(),
 			file: item,
 			size: item.size,
@@ -55,29 +56,28 @@ function multiChange(e: Event) {
 }
 
 const multipleUpload = async () => {
-	if (!multiResData) return;
+	if (!multipleFiles) return;
 	multiLoader.value = true;
-	for (let i = 0; i < multiResData.value.length; i++) {
+	for (let i = 0; i < multipleFiles.value.length; i++) {
 		try {
-			if (multiResData.value[i].status !== 1) {
-				if (multiResData.value[i].size < limit.value) {
-					const response = await uploadSingle(multiResData.value[i].file);
-					multiResData.value[i].objectName = response.data.objectName;
-					multiLoader.value = false;
+			if (multipleFiles.value[i].status !== 1) {
+				if (multipleFiles.value[i].size < limit.value) {
+					const response = await uploadSingle(multipleFiles.value[i].file);
+					multipleFiles.value[i].objectName = response.data.objectName;
 
 					if (response.status == 200) {
-						multiResData.value[i].status = 1;
+						multipleFiles.value[i].status = 1;
 					}
 				} else {
-					multiResData.value[i].status = 3;
+					multipleFiles.value[i].status = 3;
 				}
 			}
-			multiLoader.value = false;
 		} catch (error) {
-			multiResData.value[i].status = 2;
+			multipleFiles.value[i].status = 2;
 			multiLoader.value = false;
 		}
 	}
+	multiLoader.value = false;
 };
 
 async function uploadSingle(file: File) {
@@ -93,15 +93,15 @@ async function uploadSingle(file: File) {
 }
 
 const remove = async (id: string) => {
-	multiResData.value = multiResData.value.filter((e) => e.id !== id);
+	multipleFiles.value = multipleFiles.value.filter((e) => e.id !== id);
 };
 </script>
 
 <template>
 	<div class="grid gap-2 w-[100vw] h-[100%] p-2">
-		<p>Multiple Upload</p>
+		<b>Multiple Upload</b>
 		<div class="flex flex-wrap gap-2">
-			<div class="flex flex-wrap" v-for="item in multiResData" key="item.id">
+			<div class="flex flex-wrap" v-for="item in multipleFiles" key="item.id">
 				<div class="relative">
 					<img :src="item.img" class="w-[200px] h-[200px] border" />
 					<img
@@ -119,7 +119,7 @@ const remove = async (id: string) => {
 						class="absolute top-1 left-1 w-[30px]"
 						src="https://www.iconpacks.net/icons/2/free-storage-icon-1452-thumb.png"
 					/>
-					<p class="w-[150px]">{{ item.name }}</p>
+					<b class="w-[150px]">{{ item.name }}</b>
 					<button
 						@click="remove(item.id)"
 						class="absolute right-0 top-0 btn bg-red-600 text-white w-[50px] h-[30px] text-[5px] rounded"
@@ -130,6 +130,7 @@ const remove = async (id: string) => {
 			</div>
 
 			<label class="buttons border h-[200px] relative">
+				<b class="p-6">Max file size 25MB</b>
 				<input class="hidden" type="file" multiple @change="multiChange" />
 			</label>
 		</div>
