@@ -60,7 +60,7 @@ async function uploadSingle(file: File) {
 const singleUpload = async () => {
 	if (singleFile.value) {
 		try {
-			if (singleFile.value.size < +limit) {
+			if (singleFile.value.size < limit.value) {
 				if (singleFile.value.status !== 1) {
 					const response = await uploadSingle(singleFile.value.file);
 					singleFile.value.status = 1;

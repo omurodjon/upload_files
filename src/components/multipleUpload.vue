@@ -60,7 +60,7 @@ const multipleUpload = async () => {
 	for (let i = 0; i < multiResData.value.length; i++) {
 		try {
 			if (multiResData.value[i].status !== 1) {
-				if (multiResData.value[i].size < +limit) {
+				if (multiResData.value[i].size < limit.value) {
 					const response = await uploadSingle(multiResData.value[i].file);
 					multiResData.value[i].objectName = response.data.objectName;
 					multiLoader.value = false;
