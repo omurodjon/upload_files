@@ -9,12 +9,14 @@ interface MultiResList {
 	img: string;
 	name: string;
 	status: number;
+	objectName: string;
 }
 
 const multiResData = ref<MultiResList[]>([]);
 const imgUrl = ref<string>('');
 const multiLoader = ref(false);
 const isDisabled = ref(false);
+const limit = ref<number>(25600000);
 
 function multiChange(e: Event) {
 	const files = (e.target as HTMLInputElement).files;
@@ -47,6 +49,7 @@ function multiChange(e: Event) {
 			img: imgUrl.value,
 			name: item.name,
 			status: 0,
+			objectName: '',
 		});
 	}
 }
@@ -57,10 +60,11 @@ const multipleUpload = async () => {
 	for (let i = 0; i < multiResData.value.length; i++) {
 		try {
 			if (multiResData.value[i].status !== 1) {
-				if (multiResData.value[i].size < 25600000) {
+				if (multiResData.value[i].size < +limit) {
 					const response = await uploadSingle(multiResData.value[i].file);
+					multiResData.value[i].objectName = response.data.objectName;
 					multiLoader.value = false;
-					console.log('response: ', response);
+
 					if (response.status == 200) {
 						multiResData.value[i].status = 1;
 					}
