@@ -25,7 +25,6 @@ function multiChange(e: Event) {
 
 	for (let i = 0; i < files.length; i++) {
 		const item = files[i];
-
 		if (item.type.includes('jpeg') || item.type.includes('png')) {
 			imgUrl.value = URL.createObjectURL(item);
 		} else if (item.type.includes('pdf')) {
