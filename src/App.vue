@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import Single from './components/singleUpload.vue';
-import Multiple from './components/multipleUpload.vue';
+import Single from './components/single.vue';
+import Multiple from './components/multiple.vue';
 </script>
 
 <template>

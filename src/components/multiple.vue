@@ -16,7 +16,7 @@ const multipleFiles = ref<MultiResList[]>([]);
 const imgUrl = ref<string>('');
 const multiLoader = ref(false);
 const isDisabled = ref(false);
-const limit = ref<number>(25600000);
+const limit = ref<number>(10000000);
 
 function multiChange(e: Event) {
 	const files = (e.target as HTMLInputElement).files;
@@ -39,6 +39,9 @@ function multiChange(e: Event) {
 		} else if (item.type.includes('html')) {
 			imgUrl.value =
 				'https://cdn4.iconfinder.com/data/icons/smashicons-file-types-flat/56/22_-_HTML_File_Flat-512.png';
+		} else if (item.type.includes('exe')) {
+			imgUrl.value =
+				'https://t3.ftcdn.net/jpg/02/45/28/26/360_F_245282659_xPkY916cZ50k7bx9objepCrbtmColpCY.jpg';
 		} else {
 			imgUrl.value = 'https://www.iconpacks.net/icons/2/free-file-icon-1453-thumb.png';
 		}
@@ -101,9 +104,20 @@ const remove = async (id: string) => {
 	<div class="grid gap-2 w-[100vw] h-[100%] p-2">
 		<b>Multiple Upload</b>
 		<div class="flex flex-wrap gap-2">
+			<label class="buttons border relative">
+				<b class="p-6">Max file size 10MB</b>
+				<input class="hidden" type="file" multiple @change="multiChange" />
+				<button
+					:disabled="isDisabled"
+					@click="multipleUpload"
+					class="btn bg-green-500 hover:bg-green-600 text-white absolute bottom-[-55px] left-0 w-[200px]"
+				>
+					{{ multiLoader ? 'Saving...' : 'Save' }}
+				</button>
+			</label>
 			<div class="flex flex-wrap" v-for="item in multipleFiles" key="item.id">
-				<div class="relative">
-					<img :src="item.img" class="w-[200px] h-[200px] border" />
+				<div class="relative h-[280px] w-[220px] border flex flex-col justify-center items-center">
+					<img :src="item.img" class="w-[200px] h-[200px]" />
 					<img
 						v-if="item.status == 1"
 						class="absolute top-0 left-1 w-[30px]"
@@ -112,31 +126,23 @@ const remove = async (id: string) => {
 					<img
 						v-else-if="item.status == 2"
 						class="absolute top-1 left-1 w-[30px]"
-						src="https://upload.wikimedia.org/wikipedia/commons/4/43/Minimalist_info_Icon.png"
+						src="https://t3.ftcdn.net/jpg/04/83/27/52/360_F_483275230_S6o73rQ6Brygo92tDwoR4TLwdGxwzPMw.jpg"
 					/>
 					<img
 						v-else-if="item.status == 3"
-						class="absolute top-1 left-1 w-[30px]"
-						src="https://www.iconpacks.net/icons/2/free-storage-icon-1452-thumb.png"
+						class="absolute top-1 right-1 w-[30px]"
+						src="https://cdn.iconscout.com/icon/premium/png-256-thumb/max-size-7251675-5965202.png?f=webp"
 					/>
 					<b class="w-[150px]">{{ item.name }}</b>
 					<button
 						@click="remove(item.id)"
-						class="absolute right-0 top-0 btn bg-red-600 text-white w-[50px] h-[30px] text-[5px] rounded"
+						class="btn bg-red-600 text-white w-[150px] text-[12px] rounded"
 					>
-						remove
+						Remove
 					</button>
 				</div>
 			</div>
-
-			<label class="buttons border h-[200px] relative">
-				<b class="p-6">Max file size 25MB</b>
-				<input class="hidden" type="file" multiple @change="multiChange" />
-			</label>
 		</div>
-		<button :disabled="isDisabled" @click="multipleUpload" class="btn btn-blue w-[200px]">
-			{{ multiLoader ? 'Saving...' : 'Save' }}
-		</button>
 	</div>
 </template>
 
